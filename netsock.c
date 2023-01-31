@@ -205,7 +205,12 @@ ATTR_NONNULL_ALL int netsock_open_dhcp(ddhcp_epoll_data* data,uint16_t port) {
   sin.sin_port = htons(port);
   sin.sin_family = AF_INET;
 
-  inet_aton("0.0.0.0", &address_client);
+  int res = inet_aton("0.0.0.0", &address_client); // TODO: check return
+  if (res == 0) {
+    perror("can't convert address");
+    close(sock);
+    return -1;
+  }
   memcpy(&sin.sin_addr, &address_client, sizeof(sin.sin_addr));
 
   if (setsockopt(sock, SOL_SOCKET, SO_BINDTODEVICE, data->interface_name,

@@ -214,7 +214,11 @@ int main(int argc, char** argv) {
   config.block_size = 32;
   config.claiming_blocks_amount = 0;
 
-  inet_aton("10.0.0.0", &config.prefix);
+  int res = inet_aton("10.0.0.0", &config.prefix);
+  if (res == 0) {
+    ERROR("Invalid prefix\n");
+    exit(1);
+  }
   config.prefix_len = 24;
   config.spare_leases_needed = 2;
   config.block_timeout = 60;
@@ -258,11 +262,19 @@ int main(int argc, char** argv) {
       break;
 
     case 'b':
-      config.block_size = (uint8_t)(1 << atoi(optarg));
+      do {
+        int size_ln2 = atoi(optarg);
+        if (size_ln2 < 0 || size_ln2 > 31) {
+          ERROR("Block size must be positive and <= 31\n");
+          exit(1);
+        }
+        config.block_size = (uint8_t)(1 << size_ln2);
+      } while(0);
       break;
 
     case 'B':
       {
+        errno = 0;
         unsigned long block_timeout = strtoul(optarg, NULL, 0);
         if(!block_timeout) {
           ERROR("Block timeout must be > 0\n");
@@ -270,6 +282,10 @@ int main(int argc, char** argv) {
         }
         if(block_timeout == ULONG_MAX && errno) {
           ERROR("Failed to parse block timeout: %s(%d)\n", strerror(errno), errno);
+          exit(1);
+        }
+        if(block_timeout > 0xffff) {
+          ERROR("Block timeout must be <= 65535\n");
           exit(1);
         }
         config.block_timeout = (uint16_t)block_timeout;
@@ -323,7 +339,15 @@ int main(int argc, char** argv) {
 
         cidr[0] = '\0';
         cidr++;
-        inet_aton(optarg, &config.prefix);
+        int res = inet_aton(optarg, &config.prefix); // TODO: check return
+        if (res == 0) {
+          ERROR("Malformed network '%s'\n", optarg);
+          exit(1);
+        }
+        if (config.prefix.s_addr == INADDR_NONE) {
+          ERROR("Malformed network '%s'\n", optarg);
+          exit(1);
+        }
         config.prefix_len = (uint8_t)atoi(cidr);
 
         if (config.prefix_len < 8) {
@@ -340,7 +364,9 @@ int main(int argc, char** argv) {
     case 'o':
       do {
         dhcp_option* option = parse_option();
-        set_option_in_store(&config.options, option);
+        if (option != set_option_in_store(&config.options, option)) {
+          free(option);
+        }
       } while (0);
       break;
 
