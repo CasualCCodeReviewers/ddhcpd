@@ -38,8 +38,8 @@ dhcp_option* parse_option() {
 
   payload_s++[0] = '\0';
 
-  uint8_t len = (uint8_t)atoi(len_s);
-  uint8_t code = (uint8_t)atoi(optarg);
+  uint8_t len = (uint8_t)atoi(len_s); // TODO: check return
+  uint8_t code = (uint8_t)atoi(optarg); // TODO: check return
 
   dhcp_option* option = (dhcp_option*) malloc(sizeof(dhcp_option));
 
@@ -55,7 +55,7 @@ dhcp_option* parse_option() {
   if (!option->payload) {
     ERROR("parse_option(...): Failed to allocate memory for dhcp option payload '%s'\n", optarg);
     free(option);
-    exit(1);
+    exit(1); // TODO: code style: not main function terminates the program
   }
 
   for (int i = 0 ; i < len; i++) {
@@ -64,13 +64,14 @@ dhcp_option* parse_option() {
     if (!next_payload_s && (i + 1 < len)) {
       ERROR("parse_option(...): Malformed dhcp option '%s': too little payload\n", optarg);
       exit(1);
-    }
+    } // TODO: also check for too much payload using else if
 
     if (i + 1 < len) {
       next_payload_s++[0] = '\0';
     }
 
-    uint8_t payload = (uint8_t)strtoul(payload_s, NULL, 0);
+    uint8_t payload = (uint8_t)strtoul(payload_s, NULL, 0); // TODO: check user input
+    // TODO: suggestion: use char** endptr in strtoul to simplify this part
     option->payload[i] = payload;
     payload_s = next_payload_s;
   }

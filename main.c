@@ -221,7 +221,7 @@ int main(int argc, char** argv) {
   config.block_refresh_factor = 4;
   config.block_needless_timeout = 300;
   config.tentative_timeout = 15;
-  config.control_path = (char*)"/tmp/ddhcpd_ctl";
+  config.control_path = (char*)"/tmp/ddhcpd_ctl"; // TODO: check char array/pointer handling, write on read only?
   config.disable_dhcp = 0;
 
   config.hook_command = NULL;
@@ -326,6 +326,7 @@ int main(int argc, char** argv) {
         inet_aton(optarg, &config.prefix);
         config.prefix_len = (uint8_t)atoi(cidr);
 
+        config.prefix_len = (uint8_t)atoi(cidr); // TODO: check return
         if (config.prefix_len < 8) {
           ERROR("Are you the internet? CIDR less than 8 seems strange.\n");
           exit(1);
@@ -344,7 +345,7 @@ int main(int argc, char** argv) {
       } while (0);
       break;
 
-    case 's':
+    case 's': // TODO: hier machen wir nächstes mal weiter :)
       config.spare_leases_needed = (uint8_t)atoi(optarg);
 #if LOG_LEVEL_LIMIT >= LOG_WARNING
 
