@@ -18,9 +18,14 @@ ATTR_NONNULL_ALL void addr_add(struct in_addr* subnet, struct in_addr* result, i
 
 dhcp_option* parse_option() {
 
-  //size_t optlen = strlen(optarg);
+  char* option_s = strdup(optarg);
 
-  char* len_s = strchr(optarg, ':');
+  if (!option_s) {
+    ERROR("parse_option(...): Failed to allocate memory for dhcp option '%s'\n", optarg);
+    exit(1);
+  }
+
+  char* len_s = strchr(option_s, ':');
 
   if (!len_s) {
     ERROR("parse_option(...): Malformed dhcp option '%s'\n", optarg);
@@ -39,7 +44,7 @@ dhcp_option* parse_option() {
   payload_s++[0] = '\0';
 
   uint8_t len = (uint8_t)atoi(len_s);
-  uint8_t code = (uint8_t)atoi(optarg);
+  uint8_t code = (uint8_t)atoi(option_s);
 
   dhcp_option* option = (dhcp_option*) malloc(sizeof(dhcp_option));
 
@@ -75,6 +80,7 @@ dhcp_option* parse_option() {
     payload_s = next_payload_s;
   }
 
+  free(option_s);
   return option;
 }
 
