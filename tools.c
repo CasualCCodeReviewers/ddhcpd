@@ -64,6 +64,9 @@ dhcp_option* parse_option() {
     if (!next_payload_s && (i + 1 < len)) {
       ERROR("parse_option(...): Malformed dhcp option '%s': too little payload\n", optarg);
       exit(1);
+    } else if (next_payload_s && (i + 1 >= len)) {
+      ERROR("parse_option(...): Malformed dhcp option '%s': too much payload\n", optarg);
+      exit(1);
     }
 
     if (i + 1 < len) {
