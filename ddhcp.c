@@ -25,9 +25,9 @@ ATTR_NONNULL_ALL int ddhcp_block_init(ddhcp_config* config) {
 
   // TODO Maybe we should allocate number_of_blocks dhcp_lease_blocks previous
   //      and assign one here instead of NULL. Performance boost, Memory defrag?
-  struct ddhcp_block* block = config->blocks;
 
   for (uint32_t index = 0; index < config->number_of_blocks; index++) {
+    struct ddhcp_block* block = &config->blocks[index];
     block->index = index;
     block->state = DDHCP_FREE;
     addr_add(&config->prefix, &block->subnet, (int)(index * config->block_size));
@@ -36,7 +36,6 @@ ATTR_NONNULL_ALL int ddhcp_block_init(ddhcp_config* config) {
     block->timeout = now + config->block_timeout;
     block->claiming_counts = 0;
     block->addresses = NULL;
-    block++;
   }
 
   return 0;
