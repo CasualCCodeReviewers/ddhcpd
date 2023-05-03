@@ -450,7 +450,10 @@ int main(int argc, char** argv) {
   }
 
   // init block stucture
-  ddhcp_block_init(&config);
+  if (ddhcp_block_init(&config)) {
+    FATAL("Failed to allocate memory for block storage\n");
+    abort();
+  }
 
   if (dhcp_options_init(&config)) {
     FATAL("Failed to allocate memory for option store\n");
